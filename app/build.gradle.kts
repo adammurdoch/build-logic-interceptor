@@ -33,8 +33,9 @@ tasks.register("runWithAgent", JavaExec::class.java) {
 
 tasks.register("runWithClassLoader", JavaExec::class.java) {
     main = application.mainClassName
-    classpath = configurations.get("classloader")
     val appClasspath = sourceSets.main.get().runtimeClasspath
     dependsOn(appClasspath)
+    // Move Groovy and Kotlin to the system classloader, to closer match the Gradle runtime
+    classpath = configurations.get("classloader") + appClasspath.filter { it.name.matches(Regex("groovy-.+\\.jar")) || it.name.matches(Regex("kotlin-.+\\.jar")) }
     jvmArgs("-Djava.system.class.loader=org.gradle.sample.classloader.InstrumentingClassLoader", "-Dapp.classpath=${appClasspath.asPath}")
 }

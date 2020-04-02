@@ -27,6 +27,7 @@ public class InstrumentingVisitor extends ClassVisitor {
 
         @Override
         public void visitCode() {
+            System.out.println("-> visiting System.getProperty()");
             super.visitCode();
 //            visitFieldInsn(Opcodes.GETSTATIC, Type.getType(System.class).getInternalName(), "out", Type.getType(PrintStream.class).getDescriptor());
 //            visitVarInsn(Opcodes.ALOAD, 0);
