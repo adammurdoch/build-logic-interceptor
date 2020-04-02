@@ -1,5 +1,10 @@
 package org.gradle.sample.classloader;
 
+import groovy.lang.MetaClassImpl;
+import groovy.lang.MetaClassRegistry;
+import org.codehaus.groovy.runtime.callsite.CallSite;
+import org.codehaus.groovy.runtime.callsite.StaticMetaClassSite;
+import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -15,7 +20,24 @@ import java.util.List;
 public class InstrumentingClassLoader extends URLClassLoader {
     public InstrumentingClassLoader(ClassLoader parent) throws MalformedURLException {
         super(classpath(), parent);
-        System.out.println("Starting using system classloader");
+        System.out.println("[Starting using system classloader]");
+        MetaClassRegistry classRegistry = MetaClassRegistryImpl.getInstance(0);
+        MetaClassImpl metaClass = new MetaClassImpl(classRegistry, System.class) {
+            @Override
+            public CallSite createStaticSite(CallSite site, Object[] args) {
+                return new StaticMetaClassSite(site, this);
+            }
+
+            @Override
+            public Object invokeStaticMethod(Object object, String methodName, Object[] arguments) {
+                if (object.equals(System.class) && methodName.equals("getProperty") && arguments.length == 1) {
+                    Reporting.systemProperty((String) arguments[0], null);
+                }
+                return super.invokeStaticMethod(object, methodName, arguments);
+            }
+        };
+        metaClass.initialize();
+        classRegistry.setMetaClass(System.class, metaClass);
     }
 
     private static URL[] classpath() throws MalformedURLException {
