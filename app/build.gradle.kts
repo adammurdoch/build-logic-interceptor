@@ -25,10 +25,10 @@ application {
 
 tasks.register("runWithAgent", JavaExec::class.java) {
     main = application.mainClassName
-    classpath = sourceSets.main.get().runtimeClasspath
     val agentClassPath = configurations.get("agent")
+    classpath = sourceSets.main.get().runtimeClasspath + agentClassPath
     dependsOn(agentClassPath)
-    jvmArgs("-javaagent:${agentClassPath.singleFile}=")
+    jvmArgs("-javaagent:${agentClassPath.files.first()}=")
 }
 
 tasks.register("runWithClassLoader", JavaExec::class.java) {
