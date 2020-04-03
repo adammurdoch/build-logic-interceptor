@@ -1,7 +1,8 @@
-This repo contains some experiments in approaches that can be used in Gradle to intercept build logic access to 
-external resources such as system properties, files and processes.
+This repository contains some experiments in approaches that can be used in Gradle to intercept build logic access to 
+external resources such as system properties, files and processes. This is intended to be used to detect undeclared
+build inputs when instant execution is used, but may also be applied to tasks. 
 
-There are 3 strategies:
+There are 3 experiments:
 
 1. Use an instrumenting Java agent to rewrite the implementation of `System.getProperty()` to notify a reporting class when `getProperty()` is called.
 This intercepts all calls, including those made by the JDK and Gradle core.
@@ -9,23 +10,36 @@ This intercepts all calls, including those made by the JDK and Gradle core.
 Also uses a Groovy metaclass to intercept calls from dynamic Groovy code.
 3. Use a `SecurityManager` to intercept system property and file access. This intercepts all calls, including those made by the JDK and Gradle core.
 
-Agent
+Java Agent
 -----
-- Need to filter out property and file access from the JDK and Gradle core classes. There's no obvious strategy for this other than walking the stack on each access when build logic is running.
+Pros
+- Nothing really, compared to the other options
+
+Cons
+- Need to filter out property and file access from the JDK and Gradle core classes. There's no obvious reliable strategy
+for this other than walking the stack on each access when build logic is running. Another option might be to whitelist 
+certain properties and files and assume that only the JDK or Gradle uses these. 
 - Very poor error reporting when something goes wrong with the instrumentation (produces a JVM crash report with no stack trace).
 
 ClassLoader
 ----
-- Captures usages only from build logic
-- Can reuse to apply decoration to types, to fix `@Nested final` properties, mix in legacy APIs and so on. The result can be cached on disk rather than generated at runtime, and possibly applied at build time.
-- Is also applied when the build does not run in a daemon, except when running unit tests. 
-- Need to intercept dynamic Groovy differently.
+Pros
+- Captures direct usages from build logic but not the JDK or Gradle core.
+- Can reuse this infrastructure to apply decoration to model types, to fix `@Nested final` properties, mix in legacy APIs and so on. The result can be cached on disk rather than generated at runtime, and possibly even generated at build time.
+- Is also applied automatically when the build does not run in a daemon, except when running unit tests. This is not the case for the other options.
+- We already use this approach to mix in some legacy types and methods. 
+
+Cons 
+- Need to intercept dynamic Groovy differently (but this is included in the experiment).
 - Does not intercept reflective invocation. It's unlikely that we care about this case, but could be combined with one of the other approaches if we do.
 
 Security Manager
 ----
+Pros
 - Most likely to intercept all file access through the various APIs.
+
+Cons
 - Need to filter out property and file access from the JDK and Gradle core classes.
 - Very easy to break the JDK startup.
 - Only works for APIs provided and instrumented by the JDK.
-- Does not allow patching of `System.getenv()` or `System.console()` in the daemon. It's unlikely that we want to solve those problems this way anyway.
+- Does not allow patching of `System.getenv()` or `System.console()` in the daemon. On the other hand, it's unlikely that we want to solve those problems by doing this.
