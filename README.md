@@ -1,18 +1,31 @@
+This repo contains some experiments in approaches that can be used in Gradle to intercept build logic access to 
+external resources such as system properties, files and processes.
+
+There are 3 strategies:
+
+1. Use an instrumenting Java agent to rewrite the implementation of `System.getProperty()` to notify a reporting class when `getProperty()` is called.
+This intercepts all calls, including those made by the JDK and Gradle core.
+2. Use an instrumenting `ClassLoader` to rewrite the bytecode of plugin classes to notify a reporting class when `System.getProperty()` and `new FileInputStream()` is called.
+Also uses a Groovy metaclass to intercept calls from dynamic Groovy code.
+3. Use a `SecurityManager` to intercept system property and file access. This intercepts all calls, including those made by the JDK and Gradle core.
 
 Agent
 -----
-- Need to filter out property and file access from the JDK and Gradle core classes. 
-- Very poor error reporting when something goes wrong (produces a JVM crash report)
+- Need to filter out property and file access from the JDK and Gradle core classes. There's no obvious strategy for this other than walking the stack on each access when build logic is running.
+- Very poor error reporting when something goes wrong with the instrumentation (produces a JVM crash report with no stack trace).
 
 ClassLoader
 ----
-- Captures usages only from plugins
-- Need to intercept dynamic Groovy differently
-- Does not intercept reflective invocation. However, if you really want to invoke `System.getProperty()` reflectively, go for it.
-- Can reuse to apply decoration to types, and to fix `@Nested final` properties.
+- Captures usages only from build logic
+- Can reuse to apply decoration to types, to fix `@Nested final` properties, mix in legacy APIs and so on. The result can be cached on disk rather than generated at runtime, and possibly applied at build time.
+- Is also applied when the build does not run in a daemon, except when running unit tests. 
+- Need to intercept dynamic Groovy differently.
+- Does not intercept reflective invocation. It's unlikely that we care about this case, but could be combined with one of the other approaches if we do.
 
 Security Manager
 ----
-- Need to filter out property and file access from the JDK and Gradle core classes. 
-- Most likely to intercept all file access.
+- Most likely to intercept all file access through the various APIs.
+- Need to filter out property and file access from the JDK and Gradle core classes.
+- Very easy to break the JDK startup.
 - Only works for APIs provided and instrumented by the JDK.
+- Does not allow patching of `System.getenv()` or `System.console()` in the daemon. It's unlikely that we want to solve those problems this way anyway.
