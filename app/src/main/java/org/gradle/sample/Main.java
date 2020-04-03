@@ -1,6 +1,7 @@
 package org.gradle.sample;
 
 import org.gradle.sample.groovylib.GroovyLib;
+import org.gradle.sample.groovylib.StaticGroovyLib;
 import org.gradle.sample.javalib.JavaLib;
 import org.gradle.sample.kotlinlib.KotlinLib;
 
@@ -15,7 +16,8 @@ public class Main {
         System.out.println("some-prop = " + System.getProperty("some-prop"));
         File location = new File("../README.md");
         new JavaLib().something(location);
-        new GroovyLib().something();
         new KotlinLib().something();
+        new StaticGroovyLib().something();
+        new GroovyLib().something();
     }
 }
