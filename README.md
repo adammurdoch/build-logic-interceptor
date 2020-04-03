@@ -10,8 +10,12 @@ This intercepts all calls, including those made by the JDK and Gradle core.
 Also uses a Groovy metaclass to intercept calls from dynamic Groovy code.
 3. Use a `SecurityManager` to intercept system property and file access. This intercepts all calls, including those made by the JDK and Gradle core.
 
+Each experiment is applied to the application in the `app` directory. The app is made up of Java, Kotlin and dynamic and statically compiled Groovy source.
+
 Java Agent
 -----
+The agent implementation is in the `agent` directory.
+
 Pros
 - Nothing really, compared to the other options
 
@@ -23,6 +27,8 @@ certain properties and files and assume that only the JDK or Gradle uses these.
 
 ClassLoader
 ----
+The implementation is in the `classloader` directory.
+
 Pros
 - Captures direct usages from build logic but not the JDK or Gradle core.
 - Can reuse this infrastructure to apply decoration to model types, to fix `@Nested final` properties, mix in legacy APIs and so on. The result can be cached on disk rather than generated at runtime, and possibly even generated at build time.
@@ -35,6 +41,8 @@ Cons
 
 Security Manager
 ----
+The implementation is in the `securitymanager` directory.
+
 Pros
 - Most likely to intercept all file access through the various APIs.
 
