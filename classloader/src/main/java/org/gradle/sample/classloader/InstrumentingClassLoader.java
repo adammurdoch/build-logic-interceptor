@@ -5,6 +5,7 @@ import groovy.lang.MetaClassRegistry;
 import org.codehaus.groovy.runtime.callsite.CallSite;
 import org.codehaus.groovy.runtime.callsite.StaticMetaClassSite;
 import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
+import org.gradle.sample.reporting.Reporting;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
