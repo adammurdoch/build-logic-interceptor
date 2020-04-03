@@ -8,12 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InterceptingSecurityManager extends SecurityManager {
     private final AtomicBoolean init = new AtomicBoolean();
-    private final ThreadLocal<Boolean> reporting = new ThreadLocal<>() {
-        @Override
-        protected Boolean initialValue() {
-            return false;
-        }
-    };
+    private final ThreadLocal<Boolean> reporting = ThreadLocal.withInitial(() -> false);
 
     public InterceptingSecurityManager() {
         System.out.println("[intercepting security manager]");

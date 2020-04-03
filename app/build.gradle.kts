@@ -35,7 +35,8 @@ tasks.register("runWithSecManager", JavaExec::class.java) {
 tasks.register("runWithAgent", JavaExec::class.java) {
     main = application.mainClassName
     val agentClassPath = configurations.get("agent")
-    classpath = sourceSets.main.get().runtimeClasspath + agentClassPath
+    classpath = sourceSets.main.get().runtimeClasspath
+    dependsOn(agentClassPath)
     jvmArgs("-javaagent:${agentClassPath.files.first()}=")
 }
 

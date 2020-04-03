@@ -25,5 +25,7 @@ public class AgentMain {
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         inst.redefineClasses(new ClassDefinition(System.class, classWriter.toByteArray()));
         System.out.println("* System is redefined");
+
+        System.getProperty("java.version");
     }
 }

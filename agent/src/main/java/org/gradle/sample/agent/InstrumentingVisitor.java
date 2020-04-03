@@ -1,5 +1,6 @@
 package org.gradle.sample.agent;
 
+import org.gradle.sample.reporting.Reporting;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -21,18 +22,19 @@ public class InstrumentingVisitor extends ClassVisitor {
     }
 
     private static class InstrumentingMethodVisitor extends MethodVisitor {
+        private static final Type STRING_TYPE = Type.getType(String.class);
+
         public InstrumentingMethodVisitor(MethodVisitor visitor) {
             super(Opcodes.ASM8, visitor);
         }
 
         @Override
         public void visitCode() {
-            System.out.println("-> visiting System.getProperty()");
+            System.out.println("-> instrumenting System.getProperty()");
             super.visitCode();
-//            visitFieldInsn(Opcodes.GETSTATIC, Type.getType(System.class).getInternalName(), "out", Type.getType(PrintStream.class).getDescriptor());
-//            visitVarInsn(Opcodes.ALOAD, 0);
-//            visitMethodInsn(Opcodes.INVOKESTATIC, Type.getType(PrintStream.class).getInternalName(), "println", Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class)), false);
-//            visitMethodInsn(Opcodes.INVOKESTATIC, Type.getType(Reporting.class).getInternalName(), "thing", Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class)), false);
+            visitVarInsn(Opcodes.ALOAD, 0);
+            visitInsn(Opcodes.ACONST_NULL);
+            visitMethodInsn(Opcodes.INVOKESTATIC, Type.getType(Reporting.class).getInternalName(), "systemProperty", Type.getMethodDescriptor(Type.VOID_TYPE, STRING_TYPE, STRING_TYPE), false);
         }
     }
 }

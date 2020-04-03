@@ -14,3 +14,5 @@ ClassLoader
 Security Manager
 ----
 - Need to filter out property and file access from the JDK and Gradle core classes. 
+- Most likely to intercept all file access.
+- Only works for APIs provided and instrumented by the JDK.
